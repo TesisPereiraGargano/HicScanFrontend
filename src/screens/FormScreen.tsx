@@ -135,7 +135,7 @@ const FormScreen: React.FC = () => {
     // Si el campo tiene subforms, mostrar como sección colapsable
     if (hasSubForm) {
       const sectionId = field.propUri
-      const isExpanded = expandedSections.has(sectionId)
+      const isExpanded = !expandedSections.has(sectionId)
       
       return (
         <div key={field.propUri} style={{

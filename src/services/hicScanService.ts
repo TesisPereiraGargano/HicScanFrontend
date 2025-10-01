@@ -50,10 +50,11 @@ export class HicScanService {
    * @param classUri - The class URI for the form
    * @returns Promise<Form> - The transformed form data
    */
-  async getFormData(classUri: string = 'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C14284'): Promise<Form> {
+  async getFormData(classUri: string = 'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C14284', riskModelUri: string = 'http://purl.org/ontology/breast_cancer_recommendation%23UY_model'): Promise<Form> {
     try {
-      const url = `${this.baseUrl}/hicscan-api/config/v1/ontologies/ontoforms.rdf/classes/form?classUri=${encodeURIComponent(classUri)}`
-      
+      const url = `${this.baseUrl}/hicscan-api/config/v1/ontologies/ontoforms.rdf/risk-model/form?classUri=${encodeURIComponent(classUri)}&riskModelUri=${encodeURIComponent(riskModelUri)}`
+
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
