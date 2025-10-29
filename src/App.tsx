@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import PatientListScreen from './screens/PatientListScreen'
 import FormScreen from './screens/FormScreen'
+import ResultsScreen from './screens/ResultsScreen'
 import './App.css'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<PatientListScreen />} />
           <Route path="/form/:patientId" element={<FormScreen />} />
+          <Route path="/results" element={<ResultsScreen />} />
         </Routes>
       </Router>
     </div>

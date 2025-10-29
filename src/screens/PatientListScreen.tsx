@@ -1,15 +1,32 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { hicScanService } from '../services/hicScanService'
-import type { Patient } from '../services/hicScanService'
+import type { BasicPatientInfo } from '../services/hicScanService'
 import { colors } from '../themes'
 
 const PatientListScreen: React.FC = () => {
   const navigate = useNavigate()
-  const patients = hicScanService.getPatients()
+  const [patients, setPatients] = useState<BasicPatientInfo[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const handlePatientClick = (patient: Patient) => {
-    navigate(`/form/${patient.id}`)
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setLoading(true)
+        const data = await hicScanService.getPatients()
+        setPatients(data)
+        setLoading(false)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load patients')
+        setLoading(false)
+      }
+    }
+    fetchPatients()
+  }, [])
+
+  const handlePatientClick = (index: number) => {
+    navigate(`/form/${index}`)
   }
 
   return (
@@ -42,6 +59,27 @@ const PatientListScreen: React.FC = () => {
         }}>
           Lista de Pacientes
         </h1>
+
+        {loading && (
+          <div style={{ textAlign: 'center', color: 'white', fontSize: '1.2rem' }}>
+            Cargando pacientes...
+          </div>
+        )}
+
+        {error && (
+          <div style={{ 
+            textAlign: 'center', 
+            color: '#ff4444', 
+            fontSize: '1.1rem',
+            background: 'rgba(255, 255, 255, 0.9)',
+            padding: '15px',
+            borderRadius: '10px',
+            maxWidth: '600px',
+            margin: '20px auto'
+          }}>
+            Error: {error}
+          </div>
+        )}
         
         <div style={{
           display: 'flex',
@@ -53,9 +91,9 @@ const PatientListScreen: React.FC = () => {
           maxWidth: '800px',
           margin: '30px auto 0'
         }}>
-          {patients.map((patient) => (
+          {patients.map((patient, index) => (
             <div
-              key={patient.id}
+              key={index}
               style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: '15px',
@@ -83,13 +121,14 @@ const PatientListScreen: React.FC = () => {
                     fontWeight: '600',
                     marginTop: '0'
                   }}>
-                    {patient.name}
+                    {patient.nombre}
                   </h3>
                   
                   <div style={{ 
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px'
+                    gap: '10px',
+                    flexWrap: 'wrap'
                   }}>
                     <div style={{
                       background: colors.secondary.main,
@@ -99,21 +138,21 @@ const PatientListScreen: React.FC = () => {
                       fontSize: '0.8rem',
                       fontWeight: '500'
                     }}>
-                      CÉDULA
+                      {patient.genero === 'M' ? '👨' : '👩'} {patient.edad} años
                     </div>
                     <span style={{ 
                       color: colors.text.secondary, 
-                      fontSize: '1.1rem',
-                      fontWeight: '500'
+                      fontSize: '0.95rem',
+                      fontWeight: '400'
                     }}>
-                      {patient.cedula}
+                      {patient.alturaValor} {patient.alturaUnidad} - {patient.pesoValor} {patient.pesoUnidad}
                     </span>
                   </div>
                 </div>
                 
                 {/* Botón de seleccionar */}
                 <button
-                  onClick={() => handlePatientClick(patient)}
+                  onClick={() => handlePatientClick(index)}
                   style={{
                     background: `linear-gradient(135deg, ${colors.primary.main}, ${colors.secondary.main})`,
                     color: 'white',

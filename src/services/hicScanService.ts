@@ -1,48 +1,97 @@
 import type { ApiForm, Form } from '../types/form'
 import { toDomain } from '../types/form'
 
-const API_BASE_URL = import.meta.env.VITE_HIC_SCAN_BACKEND
+// const API_BASE_URL = import.meta.env.VITE_HIC_SCAN_BACKEND
 
-export interface Patient {
-  id: string
-  name: string
-  cedula: string
+// Patient data type from HCE API
+export interface BasicPatientInfo {
+  nombre: string
+  genero: 'M' | 'F'
+  fechaNacimiento: string
+  estadoCivil: string | null
+  raza: string | null
+  lugarNacimiento: string | null
+  alturaValor: string
+  alturaUnidad: string
+  pesoValor: string
+  pesoUnidad: string
+  edad: number
 }
 
-// Hardcoded patients data
-export const mockPatients: Patient[] = [
-  {
-    id: '1',
-    name: 'Juan Pérez',
-    cedula: '12345678'
-  },
-  {
-    id: '2',
-    name: 'María González',
-    cedula: '87654321'
-  },
-  {
-    id: '3',
-    name: 'Carlos Rodríguez',
-    cedula: '11223344'
-  },
-  {
-    id: '4',
-    name: 'Ana Martínez',
-    cedula: '44332211'
-  },
-  {
-    id: '5',
-    name: 'Luis Fernández',
-    cedula: '55667788'
-  }
-]
+// Types for form submission
+export interface SubmitFormRequest {
+  id: string
+  womanHistoryData: Record<string, string>
+}
+
+export interface DrugCode {
+  snomedCT: string
+  rxnorm: string
+  cui: string
+}
+
+export interface Drug {
+  codigos: DrugCode
+  nombre: string
+}
+
+export interface Medication {
+  name: string
+  doseQuantityUnit: string | null
+  doseQuantityValue: string | null
+  periodAdministrationValue: string | null
+  periodAdministrationUnit: string | null
+  drugs: Drug[]
+}
+
+export interface ClassifiedMedications {
+  diureticos: Medication[]
+  noDiureticos: Medication[]
+}
+
+export interface Medications {
+  clasificados: ClassifiedMedications
+  noClasificados: Medication[]
+}
+
+export interface BasicPatientData {
+  nombre: string
+  genero: string
+  fechaNacimiento: string
+  estadoCivil: string | null
+  raza: string | null
+  lugarNacimiento: string | null
+  alturaValor: string
+  alturaUnidad: string
+  pesoValor: string
+  pesoUnidad: string
+  edad: number
+}
+
+export interface PatientData {
+  datosBasicosPaciente: BasicPatientData
+  medicamentos: Medications
+}
+
+export interface ReasoningResult {
+  derivedStatements: string[]
+  derivations: unknown[]
+  totalStatements: number
+  success: boolean
+  errorMessage: string | null
+}
+
+export interface SubmitFormResponse {
+  datosPaciente: PatientData
+  reasoningResult: ReasoningResult
+}
 
 export class HicScanService {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = API_BASE_URL || 'http://179.27.97.6:8082'
+    // this.baseUrl = API_BASE_URL || 'http://179.27.97.6:8082'
+    this.baseUrl = 'http://localhost:8082'
   }
 
   /**
@@ -76,20 +125,67 @@ export class HicScanService {
   }
 
   /**
-   * Gets the list of mock patients
-   * @returns Patient[] - Array of patients
+   * Fetches all basic patient information from the HCE API
+   * @returns Promise<BasicPatientInfo[]> - Array of basic patient information
    */
-  getPatients(): Patient[] {
-    return mockPatients
+  async getPatients(): Promise<BasicPatientInfo[]> {
+    try {
+      const url = `${this.baseUrl}/HCE/obtenerTodosLosPacientesBasicos`
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: BasicPatientInfo[] = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error fetching basic patients:', error)
+      throw new Error(`Failed to fetch basic patients: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 
   /**
-   * Gets a specific patient by ID
-   * @param id - Patient ID
-   * @returns Patient | undefined - The patient or undefined if not found
+   * Submits form data to get patient recommendations
+   * @param patientId - The patient ID
+   * @param womanHistoryData - The form data mapping question URIs to answer URIs or values
+   * @returns Promise<SubmitFormResponse> - The response from the API
    */
-  getPatientById(id: string): Patient | undefined {
-    return mockPatients.find(patient => patient.id === id)
+  async submitPatientForm(patientId: string, womanHistoryData: Record<string, string>): Promise<SubmitFormResponse> {
+    const url = `${this.baseUrl}/HCE/obtenerDatosPacienteExtendidoConRecomendaciones`
+
+    const requestBody: SubmitFormRequest = {
+      id: patientId,
+      womanHistoryData
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: SubmitFormResponse = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error submitting form data:', error)
+      throw new Error(`Failed to submit form data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 }
 

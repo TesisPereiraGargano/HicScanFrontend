@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { hicScanService } from '../services/hicScanService'
 import type { Form, FormField } from '../types/form'
+import type { BasicPatientInfo } from '../services/hicScanService'
+import { mapPatientToFormData } from '../services/patientDataMapper'
 import { colors } from '../themes'
 
 const FormScreen: React.FC = () => {
@@ -13,6 +15,7 @@ const FormScreen: React.FC = () => {
   const [formData, setFormData] = useState<Record<string, string | number | boolean>>({})
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const [missingFieldsCount, setMissingFieldsCount] = useState(0)
+  const [patient, setPatient] = useState<BasicPatientInfo | null>(null)
 
   useEffect(() => {
     const fetchFormData = async () => {
@@ -30,6 +33,32 @@ const FormScreen: React.FC = () => {
 
     fetchFormData()
   }, [])
+
+  useEffect(() => {
+    const fetchPatient = async () => {
+      if (patientId) {
+        try {
+          const patients = await hicScanService.getPatients()
+          const patientIndex = parseInt(patientId, 10)
+          if (patients[patientIndex]) {
+            const loadedPatient = patients[patientIndex]
+            setPatient(loadedPatient)
+            
+            // Pre-cargar datos del paciente en el formulario
+            const patientFormData = mapPatientToFormData(loadedPatient)
+            setFormData(prev => ({
+              ...prev,
+              ...patientFormData
+            }))
+          }
+        } catch (error) {
+          console.error('Error fetching patients:', error)
+        }
+      }
+    }
+
+    fetchPatient()
+  }, [patientId])
 
   // Calcular campos faltantes cuando cambie el formData
   useEffect(() => {
@@ -65,7 +94,7 @@ const FormScreen: React.FC = () => {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     // Validar que todos los campos estén completos
@@ -99,9 +128,44 @@ const FormScreen: React.FC = () => {
       return
     }
     
-    console.log('Form data:', formData)
-    // Here you would typically send the data to your backend
-    alert('Formulario enviado correctamente')
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Transform formData to the format expected by the API
+      // Remove _unit keys and filter out non-form fields
+      const womanHistoryData: Record<string, string> = {}
+      for (const [key, value] of Object.entries(formData)) {
+        // Skip _unit fields
+        if (!key.endsWith('_unit')) {
+          // Convert value to string if it's not already
+          womanHistoryData[key] = String(value)
+        }
+      }
+
+      console.log('Submitting form data:', womanHistoryData)
+
+      // Convertir patientId a número, sumarle 1 y convertirlo de vuelta a string
+      const patientIdNumber = Number(patientId || '1')
+      const updatedPatientId = String(patientIdNumber + 1)
+
+      const response = await hicScanService.submitPatientForm(
+        updatedPatientId,
+        womanHistoryData
+      )
+      
+      console.log('Form submitted successfully:', response)
+      
+      // Navigate to results screen with the response data
+      navigate('/results', { state: { data: response } })
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al enviar el formulario'
+      console.error('Error submitting form:', error)
+      setError(errorMessage)
+      alert(`Error: ${errorMessage}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const toggleSection = (sectionId: string) => {
@@ -525,8 +589,6 @@ const FormScreen: React.FC = () => {
     )
   }
 
-  const patient = patientId ? hicScanService.getPatientById(patientId) : null
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -594,7 +656,7 @@ const FormScreen: React.FC = () => {
                     fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
                     fontWeight: '600'
                   }}>
-                    👤 {patient.name}
+                    👤 {patient.nombre}
                   </div>
                   <div style={{
                     background: colors.border.light,
@@ -605,7 +667,7 @@ const FormScreen: React.FC = () => {
                     fontWeight: '500',
                     border: `1px solid ${colors.border.medium}`
                   }}>
-                    🆔 {patient.cedula}
+                    {patient.genero === 'M' ? '👨' : '👩'} {patient.edad} años
                   </div>
                 </div>
               )}
@@ -699,9 +761,9 @@ const FormScreen: React.FC = () => {
             </button>
             <button
               type="submit"
-              disabled={missingFieldsCount > 0}
+              disabled={missingFieldsCount > 0 || loading}
               style={{
-                background: missingFieldsCount > 0 
+                background: missingFieldsCount > 0 || loading
                   ? `linear-gradient(135deg, ${colors.border.medium}, #9ca3af)`
                   : `linear-gradient(135deg, ${colors.status.success}, #10b981)`,
                 color: 'white',
@@ -709,30 +771,32 @@ const FormScreen: React.FC = () => {
                 border: 'none',
                 borderRadius: '25px',
                 fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
-                cursor: missingFieldsCount > 0 ? 'not-allowed' : 'pointer',
+                cursor: missingFieldsCount > 0 || loading ? 'not-allowed' : 'pointer',
                 fontWeight: '600',
                 width: window.innerWidth < 768 ? '100%' : 'auto',
                 minWidth: '150px',
                 transition: 'all 0.2s ease',
-                boxShadow: missingFieldsCount > 0 
+                boxShadow: missingFieldsCount > 0 || loading
                   ? '0 4px 15px rgba(156, 163, 175, 0.3)'
                   : '0 4px 15px rgba(16, 185, 129, 0.3)',
-                opacity: missingFieldsCount > 0 ? 0.7 : 1
+                opacity: missingFieldsCount > 0 || loading ? 0.7 : 1
               }}
               onMouseEnter={(e) => {
-                if (missingFieldsCount === 0) {
+                if (missingFieldsCount === 0 && !loading) {
                   e.currentTarget.style.transform = 'translateY(-2px)'
                   e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'
                 }
               }}
               onMouseLeave={(e) => {
-                if (missingFieldsCount === 0) {
+                if (missingFieldsCount === 0 && !loading) {
                   e.currentTarget.style.transform = 'translateY(0)'
                   e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.3)'
                 }
               }}
             >
-              {missingFieldsCount > 0 
+              {loading 
+                ? 'Enviando...' 
+                : missingFieldsCount > 0 
                 ? `Completar ${missingFieldsCount} campos restantes`
                 : 'Enviar Formulario'
               }

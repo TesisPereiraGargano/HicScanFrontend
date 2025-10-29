@@ -24,10 +24,19 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
+}
+
+/* Ensure the app can span full width and height */
+#root {
+  width: 100%;
   min-height: 100vh;
+}
+
+/* Prevent horizontal scrolling globally */
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 h1 {
