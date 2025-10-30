@@ -6,14 +6,14 @@ import type {
   SubmitFormResponse
 } from '../types/patient'
 
-// const API_BASE_URL = import.meta.env.VITE_HIC_SCAN_BACKEND
+const API_BASE_URL = import.meta.env.VITE_HIC_SCAN_BACKEND
 
 export class HicScanService {
   private baseUrl: string
 
   constructor() {
-    // this.baseUrl = API_BASE_URL || 'http://179.27.97.6:8082'
-    this.baseUrl = 'http://localhost:8082'
+    this.baseUrl = API_BASE_URL || 'http://179.27.97.6:8082'
+    // this.baseUrl = 'http://localhost:8082'
   }
 
   /**
