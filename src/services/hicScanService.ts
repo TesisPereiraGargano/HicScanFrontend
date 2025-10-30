@@ -1,90 +1,12 @@
 import type { ApiForm, Form } from '../types/form'
 import { toDomain } from '../types/form'
+import type {
+  BasicPatientInfo,
+  SubmitFormRequest,
+  SubmitFormResponse
+} from '../types/patient'
 
 // const API_BASE_URL = import.meta.env.VITE_HIC_SCAN_BACKEND
-
-// Patient data type from HCE API
-export interface BasicPatientInfo {
-  nombre: string
-  genero: 'M' | 'F'
-  fechaNacimiento: string
-  estadoCivil: string | null
-  raza: string | null
-  lugarNacimiento: string | null
-  alturaValor: string
-  alturaUnidad: string
-  pesoValor: string
-  pesoUnidad: string
-  edad: number
-}
-
-// Types for form submission
-export interface SubmitFormRequest {
-  id: string
-  womanHistoryData: Record<string, string>
-}
-
-export interface DrugCode {
-  snomedCT: string
-  rxnorm: string
-  cui: string
-}
-
-export interface Drug {
-  codigos: DrugCode
-  nombre: string
-}
-
-export interface Medication {
-  name: string
-  doseQuantityUnit: string | null
-  doseQuantityValue: string | null
-  periodAdministrationValue: string | null
-  periodAdministrationUnit: string | null
-  drugs: Drug[]
-}
-
-export interface ClassifiedMedications {
-  diureticos: Medication[]
-  noDiureticos: Medication[]
-}
-
-export interface Medications {
-  clasificados: ClassifiedMedications
-  noClasificados: Medication[]
-}
-
-export interface BasicPatientData {
-  nombre: string
-  genero: string
-  fechaNacimiento: string
-  estadoCivil: string | null
-  raza: string | null
-  lugarNacimiento: string | null
-  alturaValor: string
-  alturaUnidad: string
-  pesoValor: string
-  pesoUnidad: string
-  edad: number
-}
-
-export interface PatientData {
-  datosBasicosPaciente: BasicPatientData
-  medicamentos: Medications
-}
-
-export interface ReasoningResult {
-  derivedStatements: string[]
-  derivations: unknown[]
-  totalStatements: number
-  success: boolean
-  errorMessage: string | null
-}
-
-export interface SubmitFormResponse {
-  datosPaciente: PatientData
-  reasoningResult: ReasoningResult
-}
 
 export class HicScanService {
   private baseUrl: string

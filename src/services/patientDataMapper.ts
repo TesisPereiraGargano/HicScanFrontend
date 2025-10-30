@@ -1,4 +1,4 @@
-import type { BasicPatientInfo } from './hicScanService'
+import type { BasicPatientInfo } from '../types/patient'
 
 /**
  * Mapeo de URIs del formulario a propiedades del BasicPatientInfo

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { hicScanService } from '../services/hicScanService'
 import type { Form, FormField } from '../types/form'
-import type { BasicPatientInfo } from '../services/hicScanService'
+import type { BasicPatientInfo } from '../types/patient'
 import { mapPatientToFormData } from '../services/patientDataMapper'
 import { colors } from '../themes'
 
@@ -39,9 +39,8 @@ const FormScreen: React.FC = () => {
       if (patientId) {
         try {
           const patients = await hicScanService.getPatients()
-          const patientIndex = parseInt(patientId, 10)
-          if (patients[patientIndex]) {
-            const loadedPatient = patients[patientIndex]
+          const loadedPatient = patients.find(p => p.id === patientId)
+          if (loadedPatient) {
             setPatient(loadedPatient)
             
             // Pre-cargar datos del paciente en el formulario
@@ -145,12 +144,8 @@ const FormScreen: React.FC = () => {
 
       console.log('Submitting form data:', womanHistoryData)
 
-      // Convertir patientId a número, sumarle 1 y convertirlo de vuelta a string
-      const patientIdNumber = Number(patientId || '1')
-      const updatedPatientId = String(patientIdNumber + 1)
-
       const response = await hicScanService.submitPatientForm(
-        updatedPatientId,
+        patientId || '1',
         womanHistoryData
       )
       

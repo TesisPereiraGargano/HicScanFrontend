@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import type { SubmitFormResponse } from '../services/hicScanService'
+import type { SubmitFormResponse } from '../types/patient'
 import { colors } from '../themes'
 
 const ResultsScreen: React.FC = () => {

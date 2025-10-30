@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { hicScanService } from '../services/hicScanService'
-import type { BasicPatientInfo } from '../services/hicScanService'
+import type { BasicPatientInfo } from '../types/patient'
 import { colors } from '../themes'
 
 const PatientListScreen: React.FC = () => {
@@ -25,8 +25,8 @@ const PatientListScreen: React.FC = () => {
     fetchPatients()
   }, [])
 
-  const handlePatientClick = (index: number) => {
-    navigate(`/form/${index}`)
+  const handlePatientClick = (patientId: string) => {
+    navigate(`/form/${patientId}`)
   }
 
   return (
@@ -91,9 +91,9 @@ const PatientListScreen: React.FC = () => {
           maxWidth: '800px',
           margin: '30px auto 0'
         }}>
-          {patients.map((patient, index) => (
+          {patients.map((patient) => (
             <div
-              key={index}
+              key={patient.id}
               style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: '15px',
@@ -152,7 +152,7 @@ const PatientListScreen: React.FC = () => {
                 
                 {/* Botón de seleccionar */}
                 <button
-                  onClick={() => handlePatientClick(index)}
+                  onClick={() => handlePatientClick(patient.id)}
                   style={{
                     background: `linear-gradient(135deg, ${colors.primary.main}, ${colors.secondary.main})`,
                     color: 'white',
