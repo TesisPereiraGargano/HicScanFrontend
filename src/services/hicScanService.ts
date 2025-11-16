@@ -10,10 +10,12 @@ const API_BASE_URL = import.meta.env.VITE_HIC_SCAN_BACKEND
 
 export class HicScanService {
   private baseUrl: string
+  private ontology: string
 
   constructor() {
     this.baseUrl = API_BASE_URL || 'http://179.27.97.6:8082'
     // this.baseUrl = 'http://localhost:8082'
+    this.ontology = 'hicscan.rdf';
   }
 
   /**
@@ -23,7 +25,7 @@ export class HicScanService {
    */
   async getFormData(classUri: string = 'http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#C14284', riskModelUri: string = 'http://purl.org/ontology/breast_cancer_recommendation%23UY_model'): Promise<Form> {
     try {
-      const url = `${this.baseUrl}/hicscan-api/config/v1/ontologies/ontoforms.rdf/risk-model/form?classUri=${encodeURIComponent(classUri)}&riskModelUri=${encodeURIComponent(riskModelUri)}`
+      const url = `${this.baseUrl}/hicscan-api/config/v1/ontologies/${this.ontology}/risk-model/form?classUri=${encodeURIComponent(classUri)}&riskModelUri=${encodeURIComponent(riskModelUri)}`
 
 
       const response = await fetch(url, {
