@@ -75,7 +75,6 @@ const ResultsScreen: React.FC = () => {
     const periodicityMap: Record<string, string> = {
       'Annual': 'Anual',
       'Biennial': 'Bianual',
-      'Triennial': 'Trienal',
       'Every 2 years': 'Cada 2 años',
       'Every 3 years': 'Cada 3 años'
     }
@@ -87,8 +86,8 @@ const ResultsScreen: React.FC = () => {
     }
 
     const imagingMap: Record<string, string> = {
-      'Mammography Screening': 'Resonancia Magnética',
-      'Mammography': 'Resonancia Magnética',
+      'Mammography Screening': 'Mamografía',
+      'Mammography': 'Mamografía',
       'MRI': 'Resonancia Magnética',
       'Ultrasound': 'Ultrasonido'
     }
