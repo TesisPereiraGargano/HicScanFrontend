@@ -65,6 +65,17 @@ const ResultsScreen: React.FC = () => {
 
   const contraindications = extractContraindications()
 
+  // Count recommendations
+  const countRecommendations = () => {
+    if (!reasoningResult.womanRecommendation) return 0
+    let count = 0
+    if (reasoningResult.womanRecommendation.midRecommendation) count++
+    if (reasoningResult.womanRecommendation.highRecommendation) count++
+    return count
+  }
+
+  const recommendationsCount = countRecommendations()
+
   // Map recommendation fields to Spanish
   const mapRecommendationToSpanish = (recommendation: { imaging: string; strength: string; periodicity: string; forInterval: string }, type: 'mid' | 'high') => {
     const typeMap: Record<string, string> = {
@@ -195,7 +206,7 @@ const ResultsScreen: React.FC = () => {
               paddingBottom: '10px',
               borderBottom: '3px solid #34d399'
             }}>
-              💡 Recomendaciones
+              💡 Recomendaciones ({recommendationsCount})
             </h2>
             <div style={{ 
               background: '#f0fdf4', 
