@@ -65,6 +65,42 @@ const ResultsScreen: React.FC = () => {
 
   const contraindications = extractContraindications()
 
+  // Map recommendation fields to Spanish
+  const mapRecommendationToSpanish = (recommendation: { imaging: string; strength: string; periodicity: string; forInterval: string }, type: 'mid' | 'high') => {
+    const typeMap: Record<string, string> = {
+      'mid': 'Recomendación Moderada',
+      'high': 'Recomendación Alta'
+    }
+
+    const periodicityMap: Record<string, string> = {
+      'Annual': 'Anual',
+      'Biennial': 'Bianual',
+      'Triennial': 'Trienal',
+      'Every 2 years': 'Cada 2 años',
+      'Every 3 years': 'Cada 3 años'
+    }
+
+    const strengthMap: Record<string, string> = {
+      'Qualified Recommendation': 'Recomendación Calificada',
+      'Strong Recommendation': 'Recomendación Fuerte',
+      'Recommendation': 'Recomendación'
+    }
+
+    const imagingMap: Record<string, string> = {
+      'Mammography Screening': 'Resonancia Magnética',
+      'Mammography': 'Resonancia Magnética',
+      'MRI': 'Resonancia Magnética',
+      'Ultrasound': 'Ultrasonido'
+    }
+
+    return {
+      type: typeMap[type] || type,
+      periodicity: periodicityMap[recommendation.periodicity] || recommendation.periodicity,
+      strength: strengthMap[recommendation.strength] || recommendation.strength,
+      imaging: imagingMap[recommendation.imaging] || recommendation.imaging
+    }
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -148,6 +184,77 @@ const ResultsScreen: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Recomendaciones */}
+        {contraindications.length === 0 &&
+         reasoningResult.womanRecommendation && 
+         (reasoningResult.womanRecommendation.midRecommendation || reasoningResult.womanRecommendation.highRecommendation) && (
+          <div style={{ marginBottom: '30px' }}>
+            <h2 style={{ 
+              marginBottom: '15px', 
+              color: '#34d399',
+              paddingBottom: '10px',
+              borderBottom: '3px solid #34d399'
+            }}>
+              💡 Recomendaciones
+            </h2>
+            <div style={{ 
+              background: '#f0fdf4', 
+              padding: '20px', 
+              borderRadius: '10px',
+              borderLeft: '4px solid #34d399'
+            }}>
+              {reasoningResult.womanRecommendation.midRecommendation && (
+                <div style={{
+                  padding: '15px',
+                  marginBottom: '10px',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid #d1fae5'
+                }}>
+                  <div style={{ 
+                    fontSize: '1.1rem', 
+                    fontWeight: '600', 
+                    color: '#34d399',
+                    marginBottom: '10px'
+                  }}>
+                    {mapRecommendationToSpanish(reasoningResult.womanRecommendation.midRecommendation, 'mid').type}
+                  </div>
+                  <div style={{ color: colors.text.secondary, fontSize: '0.95rem', marginBottom: '5px' }}>
+                    <strong>Estudio:</strong> {mapRecommendationToSpanish(reasoningResult.womanRecommendation.midRecommendation, 'mid').imaging}
+                  </div>
+                  <div style={{ color: colors.text.secondary, fontSize: '0.95rem' }}>
+                    <strong>Periodicidad:</strong> {mapRecommendationToSpanish(reasoningResult.womanRecommendation.midRecommendation, 'mid').periodicity}
+                  </div>
+                </div>
+              )}
+              {reasoningResult.womanRecommendation.highRecommendation && (
+                <div style={{
+                  padding: '15px',
+                  marginBottom: '10px',
+                  background: 'white',
+                  borderRadius: '8px',
+                  border: '1px solid #d1fae5'
+                }}>
+                  <div style={{ 
+                    fontSize: '1.1rem', 
+                    fontWeight: '600', 
+                    color: '#34d399',
+                    marginBottom: '10px'
+                  }}>
+                    {mapRecommendationToSpanish(reasoningResult.womanRecommendation.highRecommendation, 'high').type}
+                  </div>
+                  <div style={{ color: colors.text.secondary, fontSize: '0.95rem', marginBottom: '5px' }}>
+                    <strong>Estudio:</strong> {mapRecommendationToSpanish(reasoningResult.womanRecommendation.highRecommendation, 'high').imaging}
+                  </div>
+                  <div style={{ color: colors.text.secondary, fontSize: '0.95rem' }}>
+                    <strong>Periodicidad:</strong> {mapRecommendationToSpanish(reasoningResult.womanRecommendation.highRecommendation, 'high').periodicity}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Medicamentos Diuréticos */}
         {medicamentos.clasificados.diureticos.length > 0 && (
