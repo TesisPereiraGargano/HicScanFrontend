@@ -69,12 +69,25 @@ export interface PatientData {
   medicamentos: Medications
 }
 
+export interface Recommendation {
+  imaging: string
+  strength: string
+  periodicity: string
+  forInterval: string
+}
+
+export interface WomanRecommendation {
+  midRecommendation: Recommendation | null
+  highRecommendation: Recommendation | null
+}
+
 export interface ReasoningResult {
   derivedStatements: string[]
   derivations: unknown[]
   totalStatements: number
   success: boolean
   errorMessage: string | null
+  womanRecommendation: WomanRecommendation | null
 }
 
 export interface SubmitFormResponse {
